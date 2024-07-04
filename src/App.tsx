@@ -4,8 +4,11 @@ import Home from "./routes/home";
 import Profile from "./routes/profile";
 import Login from "./routes/login";
 import CreateAccount from "./routes/create-account";
-import { createGlobalStyle } from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 import reset from "styled-reset";
+import { useEffect, useState } from "react";
+import LoadingScreen from "./components/loading-screen";
+import { auth } from "./routes/firebase";
 
 const router = createBrowserRouter([ // 라우터로 초기 화면 보여질 경로 설정
   {
@@ -56,15 +59,31 @@ const GlobalStyles = createGlobalStyle`
     sans-serif;
   }
   `;
-function App() {
+
+  const Wrapper = styled.div`
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  `;
+
+  function App() {
+  const [isLoading, setIsLoading] = useState(true); // 로딩 변수
+  const init = async()=>{
+    await auth.authStateReady();
+    // 파이어 베이스 로딩 대기
+    setIsLoading(false)
+  }
+  useEffect(()=>{ // 로딩화면 한번 호출
+    init()
+  }, [])
 
   return (
-    <>
-      <GlobalStyles />
+    <Wrapper>
+      <GlobalStyles/>
       {/* 초기 스타일 설정 */}
-      <RouterProvider router={router} />
+      {isLoading? <LoadingScreen/> : <RouterProvider router={router} />}
       {/* 위에 설정된 라우터 화면 출력 */}
-    </>
+      </Wrapper>
   )
 }
 
