@@ -1,7 +1,10 @@
 // 회원가입 화면
 
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import React, { useState } from "react";
 import styled from "styled-components"
+import { auth } from "./firebase";
+import { useNavigate } from "react-router-dom";
 
 const Wrapper = styled.div`
 justify-content : center;
@@ -45,6 +48,7 @@ const Error = styled.span`
 
 
 export default function CreateAccount (){
+    const navigate = useNavigate();
     const [isLoding, setIsLoading] = useState(false);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -62,12 +66,18 @@ export default function CreateAccount (){
             setPassword(value);
         }
     }
-    const onSubmit = (e:React.FormEvent<HTMLFormElement>)=>{
+    const onSubmit = async (e:React.FormEvent<HTMLFormElement>)=>{
         e.preventDefault(); // 폼 제출시 화면이 새로고침 되는걸 막으며, 폼의 기본 작동방식을 막음
+        if(isLoding || name === "" || email === "" || password === "") return;
         try{
-            // 계정 생성
-            // 유저 이름 세팅
-            // 이후 홈페이지 설정
+            setIsLoading(true); // 계정생성 진행시 submit 버튼 내용을 로딩으로 표시
+            const credentials = await createUserWithEmailAndPassword(auth, email, password); // 파이어 베이스 함수로 이메일, 비밀번호 넘길시 계정생성 (auth는 firebase.ts에서 생성한변수)
+            console.log(credentials.user)
+
+            await updateProfile(credentials.user, { // 사용자의 기본 프로필 정보 업데이트
+                displayName : name
+            });
+            navigate("/");
         }catch(e){
 
         }finally{
@@ -77,7 +87,7 @@ export default function CreateAccount (){
     }
     return (
         <Wrapper>
-            <Title>Log into𝕏</Title>
+            <Title>Join 𝕏</Title>
             <Form onSubmit={onSubmit}>
                 <Input onChange={onChange} name="name" value={name} placeholder="Name" type="text" required/>
                 <Input onChange={onChange} name="email" value={email} placeholder="Email" type="text" required/>
