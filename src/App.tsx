@@ -9,11 +9,12 @@ import reset from "styled-reset";
 import { useEffect, useState } from "react";
 import LoadingScreen from "./components/loading-screen";
 import { auth } from "./routes/firebase";
+import ProtectedRoute from "./components/protected-router";
 
 const router = createBrowserRouter([ // 라우터로 초기 화면 보여질 경로 설정
   {
     path: "/", // 초기 보여질 화면 layout.tsx 설정 ex) http://localhost:5173/
-    element: <Layout />,
+    element: <ProtectedRoute><Layout /></ProtectedRoute>,
     children: [ // 해당 파라미터(children) 안에 있을 경우 layout.tsx와 함께 출력 된다.
       {
         path: "", // 경로설정이 비어있을 경우 http://localhost:5173/ 경로 일때 해당 화면을 layout.tsx와 더불어 출력
