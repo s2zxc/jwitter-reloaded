@@ -1,5 +1,7 @@
+import { addDoc, collection } from "firebase/firestore";
 import React, { useState } from "react";
 import styled from "styled-components"
+import { auth, db } from "../routes/firebase";
 
 const Form = styled.form`
     display: flex;
@@ -76,8 +78,31 @@ export default function PostTweetForm() {
             setFile(files[0]);
         }
     }
+    const onSubmit = async(e:React.FormEvent<HTMLFormElement>)=>{
+        e.preventDefault();
+        const user = auth.currentUser;
+        if(!user || isLoading || tweet === "" || tweet.length>180) return;
+
+        try{
+            setLoading(true);
+            // firebase SDK의 기능으로 어떤 컬랙션에 document를 생성하고 싶은지 지정
+            await addDoc(collection(db, "tweet"),{
+                tweet, // 트윗내용
+                createdAt:Date.now(), // 트윗게시 시간
+                userName:user.displayName || "Anonymous", // 유저 이름
+                userId : user.uid, // 유저 아이디(차후 삭제 기능관련해서 일치여부 판단하기 위함)
+
+            });
+            setTweet("");
+        }catch(e){
+            console.log(e);
+        }finally{
+            setLoading(false);
+        }
+    }
+
     return (
-        <Form>
+        <Form onSubmit={onSubmit}>
             <TextArea
                 rows={5}
                 maxLength={180}
